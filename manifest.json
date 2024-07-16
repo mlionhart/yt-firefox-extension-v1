@@ -1,20 +1,17 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "YouTube Community Search",
   "version": "1.0",
   "description": "Allows Search of Community Posts",
   "permissions": [
-    "tabs",
-    "activeTab",
     "storage",
-    "scripting",
     "unlimitedStorage",
-    "https://studio.youtube.com/*" 
+    "https://studio.youtube.com/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"]
   },
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -28,10 +25,5 @@
       "js": ["content.js"]
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["content.js", "popup.html", "popup2.html"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  "web_accessible_resources": ["content.js", "popup.html", "popup2.html"]
 }

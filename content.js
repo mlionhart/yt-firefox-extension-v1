@@ -17,10 +17,12 @@ function clickDownloadLink() {
   if (targetElement) {
     targetElement.focus();
     targetElement.click();
+    setTimeout(() => {
+      browser.runtime.sendMessage({ action: "downloadComplete" })
+    }, 1000);
   } else {
     console.error("Target element not found.");
   }
-  browser.runtime.sendMessage({ action: "downloadComplete" });
 }
 
 // Listen for clickDownloadButton message from background script

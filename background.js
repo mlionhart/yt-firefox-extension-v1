@@ -1,6 +1,7 @@
 let tabCreated = false;
 let tabId = null;
 let channelId = null;
+let mainPopupCreated = false; 
 
 function getLink(channelId) {
   const link = `https://studio.youtube.com/channel/${channelId}/analytics/tab-overview/period-4_weeks/explore?entity_type=CHANNEL&entity_id=${channelId}&time_period=lifetime&explore_type=TABLE_AND_CHART&metrics_computation_type=DELTA&metric=POST_IMPRESSIONS&granularity=DAY&t_metrics=POST_IMPRESSIONS&t_metrics=POST_LIKES&t_metrics=POST_VOTES&t_metrics=POST_LIKES_PER_IMPRESSIONS&t_metrics=POST_VOTES_PER_IMPRESSIONS&v_metrics=VIEWS&v_metrics=WATCH_TIME&v_metrics=SUBSCRIBERS_NET_CHANGE&v_metrics=TOTAL_ESTIMATED_EARNINGS&v_metrics=VIDEO_THUMBNAIL_IMPRESSIONS&v_metrics=VIDEO_THUMBNAIL_IMPRESSIONS_VTR&dimension=POST&o_column=POST_IMPRESSIONS&o_direction=ANALYTICS_ORDER_DIRECTION_DESC`;
@@ -56,7 +57,6 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     return true; // Keep the message channel open for sendResponse
   }
-  return false; // Indicates that no response will be sent asynchronously
 });
 
 // Listen for tab removal to reset tabCreated and tabId
@@ -122,25 +122,30 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Listen for openMainPopup message from popup2.js
 browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "openMainPopup") {
-    // Close popup2.html window
-    browser.windows
-      .remove(sender.tab.windowId)
-      .then(() => {
-        // Open the extension's main popup
-        return browser.windows.create({
-          url: browser.runtime.getURL("popup.html"),
-          type: "popup",
-          width: 530,
-          height: 650,
+    if (!mainPopupCreated) {
+      mainPopupCreated = true; // Set the flag to true to prevent multiple creations
+      // Close popup2.html window
+      browser.windows
+        .remove(sender.tab.windowId)
+        .then(() => {
+          // Open the extension's main popup
+          return browser.windows.create({
+            url: browser.runtime.getURL("popup.html"),
+            type: "popup",
+            width: 530,
+            height: 650,
+          });
+        })
+        .then(() => {
+          sendResponse({ success: true });
+        })
+        .catch((error) => {
+          console.error("Error opening main popup:", error);
+          sendResponse({ success: false, error: error.message });
         });
-      })
-      .then(() => {
-        sendResponse({ success: true });
-      })
-      .catch((error) => {
-        console.error("Error opening main popup:", error);
-        sendResponse({ success: false, error: error.message });
-      });
+    } else {
+      sendResponse({ success: false, error: "Main popup already created" });
+    }
 
     return true; // Keep the message channel open for sendResponse
   } else if (request.action === "closeWindowOnly") {
@@ -149,6 +154,12 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .remove(sender.tab.windowId)
       .then(() => {
         sendResponse({ success: true });
+
+        // message popup.html window to reload
+        return browser.runtime.sendMessage({ action: "reload" });
+      })
+      .then(() => {
+        console.log("Reload message sent");
       })
       .catch((error) => {
         console.error("Error closing window:", error);
@@ -157,17 +168,32 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true; // Keep the message channel open for sendResponse
   }
-  return false; // Indicates that no response will be sent asynchronously
 });
 
 // Listen for download complete message from content script
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "downloadComplete") {
-    // Ensure sendResponse is called asynchronously to prevent message channel closure
-    setTimeout(() => {
-      sendResponse({ success: true });
-    }, 0);
-    return true; // Keep the message channel open for sendResponse
+  if (
+    message.action === "downloadComplete" &&
+    sender.id !== browser.runtime.id
+  ) {
+    console.log("Download complete message received in background script");
+
+    // Send a message to the popup to notify it of the download completion
+    browser.runtime
+      .sendMessage({ action: "downloadComplete" })
+      .then(() => {
+        console.log("Download complete message sent to popup");
+      })
+      .catch((error) => {
+        console.error(
+          "Error sending downloadComplete message to popup:",
+          error
+        );
+      });
+
+    sendResponse({ success: true });
+  } else {
+    sendResponse({ success: false, error: "Unknown action or sender" });
   }
-  return false; // Indicates that no response will be sent asynchronously
+  return true; // Keep the message channel open for sendResponse
 });

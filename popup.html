@@ -8,17 +8,20 @@
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+    <script src="js/purify.min.js"></script>
 
   <title>YT Post Data</title>
   <style>
     body {
       background-color: #333;
       width: 500px;
+      min-height: 250px;
     }
 
     h2 {
       color: white;
       margin-bottom: 10px;
+      display: inline-block;
     }
 
     .form-container {
@@ -44,11 +47,12 @@
 
 <body>
   <div class="container-fluid">
-    <div id="message"></div>
+    <div class="message"></div>
+    <i id="refresh" class="bi bi-arrow-clockwise" style="display:none;"></i>
     <div class="form-container">
       <div class="form-floating">
         <input type="text" id="search-term" class="form-control" name="search-term"
-          placeholder="Enter Search Term of Phrase">
+          placeholder="Enter Search Term or Phrase">
         <label for="search-term"></label>
       </div>
       <div class="form-select-container">
