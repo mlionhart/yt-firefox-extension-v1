@@ -54,7 +54,7 @@ If you encounter any issues or have questions, please reach out to us:
 - **v1.0**: Initial release.
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License. Created by Mike Hart. For more information, see the [LICENSE](LICENSE.md) file.
 
 # Extension Information - for Firefox Reviewers
 
